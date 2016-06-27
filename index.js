@@ -22,7 +22,7 @@ class ConsulServiceResolver extends EventEmitter {
             .end((response) => {
 
                 setTimeout(() => {
-                    this.resolve();
+                    this.consul_resolve();
                 }, 2000);
 
                 if (!response.ok) {
