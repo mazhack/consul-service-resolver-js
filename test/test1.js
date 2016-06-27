@@ -14,6 +14,55 @@ const data = [
             {
                 "ModifyIndex": 90796,
                 "CreateIndex": 56257,
+                "Node": "vm_docker_4_s1.lostaxis.com",
+                "CheckID": "serfHealth",
+                "Name": "Serf Health Status",
+                "Status": "passing",
+                "Notes": "",
+                "Output": "Agent alive and reachable",
+                "ServiceID": "",
+                "ServiceName": ""
+            },
+            {
+                "ModifyIndex": 91055,
+                "CreateIndex": 91050,
+                "Node": "vm_docker_4_s1.lostaxis.com",
+                "CheckID": "service:f56d25af11e4:taxidispatch_zmqbroker:9001",
+                "Name": "service:f56d25af11e4:taxidispatch_zmqbroker:9001",
+                "Status": "passing",
+                "Notes": "",
+                "Output": "TCP connect 192.168.100.133:9001: Success",
+                "ServiceID": "f56d25af11e4:taxidispatch_zmqbroker:9001",
+                "ServiceName": "zmqbroker.sub.td"
+            }
+        ],
+        "Service": {
+            "ModifyIndex": 91055,
+            "CreateIndex": 90904,
+            "EnableTagOverride": false,
+            "Port": 9001,
+            "Address": "192.168.100.133",
+            "Tags": [
+                "zmq sub"
+            ],
+            "Service": "zmqbroker.sub.td",
+            "ID": "f56d25af11e4:taxidispatch_zmqbroker:9001"
+        },
+        "Node": {
+            "ModifyIndex": 91055,
+            "CreateIndex": 56253,
+            "TaggedAddresses": {
+                "wan": "192.168.100.133"
+            },
+            "Address": "192.168.100.133",
+            "Node": "vm_docker_4_s1.lostaxis.com"
+        }
+    },
+    {
+        "Checks": [
+            {
+                "ModifyIndex": 90796,
+                "CreateIndex": 56257,
                 "Node": "vm_docker_3_s1.lostaxis.com",
                 "CheckID": "serfHealth",
                 "Name": "Serf Health Status",
@@ -109,15 +158,15 @@ describe("test1.js", function () {
                 index: 0,
                 del: [],
                 new: [
+                    { address: '192.168.100.133', port: 9001 },
                     { address: '192.168.100.113', port: 9001 },
-                    { address: '192.168.100.123', port: 9001 }
                 ]
             };
             expect(expected).to.be.deep.equals(data);
 
             let address=[
+                { address: '192.168.100.133', port: 9001 },
                 { address: '192.168.100.113', port: 9001 },
-                { address: '192.168.100.123', port: 9001 }
             ];
             expect(address).to.be.deep.equal(this.service_addresses);
 
@@ -132,7 +181,7 @@ describe("test1.js", function () {
         let resolver = new ConsulServiceResolver('zmqbroker.sub.td');
         resolver.service_addresses = [
                 { address: '192.168.100.113', port: 9001 },
-                { address: '192.168.100.133', port: 9001 }
+                { address: '192.168.100.143', port: 9001 }
             ];
 
         resolver.on('resolve_consul_config', function (data) {
@@ -140,17 +189,17 @@ describe("test1.js", function () {
                 name: 'zmqbroker.sub.td',
                 index: 0,
                 del: [
-                    { address: '192.168.100.133', port: 9001 }
+                    { address: '192.168.100.143', port: 9001 }
                 ],
                 new: [
-                    { address: '192.168.100.123', port: 9001 },
+                    { address: '192.168.100.133', port: 9001 },
                 ]
             };
             expect(expected).to.be.deep.equals(data);
 
             let address=[
+                { address: '192.168.100.133', port: 9001 },
                 { address: '192.168.100.113', port: 9001 },
-                { address: '192.168.100.123', port: 9001 }
             ];
             expect(address).to.be.deep.equal(this.service_addresses);
 
@@ -165,8 +214,8 @@ describe("test1.js", function () {
         let resolver = new ConsulServiceResolver('zmqbroker.sub.td');
         resolver.service_addresses = [
                 { address: '192.168.100.113', port: 9001 },
-                { address: '192.168.100.123', port: 9001 },
-                { address: '192.168.100.133', port: 9001 }
+                { address: '192.168.100.133', port: 9001 },
+                { address: '192.168.100.143', port: 9001 },
             ];
 
         resolver.on('resolve_consul_config', function (data) {
@@ -174,15 +223,15 @@ describe("test1.js", function () {
                 name: 'zmqbroker.sub.td',
                 index: 0,
                 del: [
-                    { address: '192.168.100.133', port: 9001 }
+                    { address: '192.168.100.143', port: 9001 }
                 ],
                 new: []
             };
             expect(expected).to.be.deep.equals(data);
 
             let address=[
+                { address: '192.168.100.133', port: 9001 },
                 { address: '192.168.100.113', port: 9001 },
-                { address: '192.168.100.123', port: 9001 }
             ];
             expect(address).to.be.deep.equal(this.service_addresses);
 
@@ -198,7 +247,8 @@ describe("test1.js", function () {
         resolver.service_addresses = [
                 { address: '192.168.100.113', port: 9001 },
                 { address: '192.168.100.123', port: 9001 },
-                { address: '192.168.100.133', port: 9001 }
+                { address: '192.168.100.133', port: 9001 },
+                { address: '192.168.100.143', port: 9001 },
             ];
 
         resolver.on('resolve_consul_config', function (data) {
@@ -208,7 +258,8 @@ describe("test1.js", function () {
                 del: [
                     { address: '192.168.100.113', port: 9001 },
                     { address: '192.168.100.123', port: 9001 },
-                    { address: '192.168.100.133', port: 9001 }
+                    { address: '192.168.100.133', port: 9001 },
+                    { address: '192.168.100.143', port: 9001 },
                 ],
                 new: []
             };

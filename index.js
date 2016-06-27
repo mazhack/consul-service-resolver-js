@@ -12,6 +12,8 @@ class ConsulServiceResolver extends EventEmitter {
         this.service_index = 0;
         this.service_addresses = [];
 
+        this.service_checks_min = 2;
+
         this.consul_server = process.env.CONSUL_URL || 'http://localhost:8500';
     }
 
@@ -46,19 +48,21 @@ class ConsulServiceResolver extends EventEmitter {
             const address = s.Service.Address;
             const port = s.Service.Port;
 
-            addresses.push({
-                address, port
-            });
+            if (s.Checks.length >= this.service_checks_min) {
+                addresses.push({
+                    address, port
+                });
+            }
         });
 
         const anew = addresses.filter((item) => {
-            return ! this.service_addresses.some((old) => {
+            return !this.service_addresses.some((old) => {
                 return item.address === old.address && item.port === old.port;
             })
         });
 
         const adel = this.service_addresses.filter((old) => {
-           return ! addresses.some((item) => {
+            return !addresses.some((item) => {
                 return item.address === old.address && item.port === old.port;
             });
         });
