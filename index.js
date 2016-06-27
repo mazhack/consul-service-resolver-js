@@ -4,7 +4,7 @@ const Unirest = require('unirest');
 const util = require('util');
 const EventEmitter = require('events');
 
-class ConsulResolver extends EventEmitter {
+class ConsulServiceResolver extends EventEmitter {
 
     constructor(service_name) {
         super();
@@ -15,7 +15,7 @@ class ConsulResolver extends EventEmitter {
         this.consul_server = process.env.CONSUL_URL || 'http://localhost:8500';
     }
 
-    resolve() {
+    consul_resolve() {
         const url = util.format('%s/v1/health/service/%s?passing&index=%s', this.consul_server, this.service_name, this.service_index);
 
         Unirest.get(url)
@@ -25,63 +25,64 @@ class ConsulResolver extends EventEmitter {
                     this.resolve();
                 }, 2000);
 
-                // not connect to consul
-                if (response.error) {
+                if (!response.ok) {
                     this.emit('resolve_consul_error', {
                         err: response.error,
                         service_name: this.service_name,
                         url
                     });
-                    return;
+                } else {
+                    this.service_index = response.headers['x-consul-index'];
+                    this.consul_process(response.body, url)
                 }
-
-                this.service_index = response.headers['x-consul-index'];
-
-                const addresses = [];
-
-                response.body.forEach((s) => {
-                    const address = s.Service.Address;
-                    const port = s.Service.Port;
-
-                    addresses.push({
-                        address, port
-                    });
-                });
-
-                const anew = addresses.filter((item) => {
-                    return this.service_addresses.every((old) => {
-                        return item.address !== old.address && item.port !== old.port;
-                    })
-                });
-
-                const adel = this.service_addresses.filter((old) => {
-                    return addresses.every((item) => {
-                        return item.address !== old.address && item.port !== old.port;
-                    })
-                });
-
-                this.service_addresses = addresses;
-
-                if (anew.length > 0 || adel.length > 0) {
-                    this.emit('resolve_consul_config', {
-                        name: this.service_name,
-                        index: this.service_index,
-                        del: adel,
-                        new: anew
-                    });
-                }
-
-                // not servers availables
-                if (this.service_addresses.length === 0) {
-                    this.emit('resolve_consul_no_servers', {
-                        service_name: this.service_name,
-                        url
-                    });
-                }
-
             });
+    }
+
+    consul_process(data, url) {
+
+        const addresses = [];
+
+        data.forEach((s) => {
+            const address = s.Service.Address;
+            const port = s.Service.Port;
+
+            addresses.push({
+                address, port
+            });
+        });
+
+        const anew = addresses.filter((item) => {
+            return ! this.service_addresses.some((old) => {
+                return item.address === old.address && item.port === old.port;
+            })
+        });
+
+        const adel = this.service_addresses.filter((old) => {
+           return ! addresses.some((item) => {
+                return item.address === old.address && item.port === old.port;
+            });
+        });
+
+        this.service_addresses = addresses;
+
+        if (anew.length > 0 || adel.length > 0) {
+            this.emit('resolve_consul_config', {
+                name: this.service_name,
+                index: this.service_index,
+                del: adel,
+                new: anew
+            });
+        }
+
+        // not servers availables
+        if (this.service_addresses.length === 0) {
+            this.emit('resolve_consul_no_servers', {
+                service_name: this.service_name,
+                url
+            });
+        }
     }
 
 }
 
-module.exports = ConsulResolver;
+module.exports = ConsulServiceResolver;
